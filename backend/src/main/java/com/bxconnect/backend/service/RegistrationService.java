@@ -26,19 +26,15 @@ public class RegistrationService {
         return registrationRepository.findById(id);
     }
 
-    public List<Registration> getRegistrationsByUser(User user) {
-        return registrationRepository.findByUser(user);
-    }
-
-    public List<Registration> getRegistrationsByActivity(Activity activity) {
-        return registrationRepository.findByActivity(activity);
-    }
-
     public Registration saveRegistration(Registration registration) {
         return registrationRepository.save(registration);
     }
 
     public void deleteRegistration(Long id) {
         registrationRepository.deleteById(id);
+    }
+
+    public boolean existsByUserAndActivity(User user, Activity activity) {
+        return registrationRepository.existsByUserAndActivity(user, activity);
     }
 }

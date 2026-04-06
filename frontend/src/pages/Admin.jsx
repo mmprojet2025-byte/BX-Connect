@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ActivityForm from "../components/ActivityForm";
 import ActivityList from "../components/ActivityList";
+import "./Admin.css";
 
 function Admin() {
+  const navigate = useNavigate();
+
   const [activities, setActivities] = useState([]);
   const [formData, setFormData] = useState({
     titre: "",
@@ -13,10 +17,13 @@ function Admin() {
   });
   const [editingId, setEditingId] = useState(null);
 
-   const loadActivities = () => {
+  const loadActivities = () => {
     fetch("http://localhost:8080/api/activities")
       .then((res) => res.json())
-      .then((data) => setActivities(data));
+      .then((data) => setActivities(data))
+      .catch((error) =>
+        console.error("Erreur lors du chargement des activités :", error)
+      );
   };
 
   useEffect(() => {
@@ -39,23 +46,32 @@ function Admin() {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
-    }).then(() => {
-      setFormData({
-        titre: "",
-        description: "",
-        date: "",
-        lieu: "",
-        categorie: "",
-      });
-      setEditingId(null);
-      loadActivities();
-    });
+    })
+      .then((response) => response.json())
+      .then(() => {
+        setFormData({
+          titre: "",
+          description: "",
+          date: "",
+          lieu: "",
+          categorie: "",
+        });
+        setEditingId(null);
+        loadActivities();
+      })
+      .catch((error) =>
+        console.error("Erreur lors de l'enregistrement de l'activité :", error)
+      );
   };
 
   const handleDelete = (id) => {
     fetch(`http://localhost:8080/api/activities/${id}`, {
       method: "DELETE",
-    }).then(loadActivities);
+    })
+      .then(() => loadActivities())
+      .catch((error) =>
+        console.error("Erreur lors de la suppression :", error)
+      );
   };
 
   const handleEdit = (a) => {
@@ -80,23 +96,55 @@ function Admin() {
     });
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("isAdmin");
+    navigate("/login");
+  };
+
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Admin</h1>
+    <div className="admin-page">
+      <div className="admin-header">
+        <div>
+          <h1 className="admin-title">Espace Admin</h1>
+          <p className="admin-subtitle">
+            Ajoute, modifie et supprime les activités de la plateforme.
+          </p>
+        </div>
 
-      <ActivityForm
-        formData={formData}
-        handleChange={handleChange}
-        handleSubmit={handleSubmit}
-        editingId={editingId}
-        cancelEdit={cancelEdit}
-      />
+        <button onClick={handleLogout} className="admin-logout-button">
+          Se déconnecter
+        </button>
+      </div>
 
-      <ActivityList
-        activities={activities}
-        handleEdit={handleEdit}
-        handleDelete={handleDelete}
-      />
+      <div className="admin-layout">
+        <div className="admin-left-column">
+          <div className="admin-panel">
+            <h2 className="admin-panel-title">
+              {editingId ? "Modifier une activité" : "Ajouter une activité"}
+            </h2>
+
+            <ActivityForm
+              formData={formData}
+              handleChange={handleChange}
+              handleSubmit={handleSubmit}
+              editingId={editingId}
+              cancelEdit={cancelEdit}
+            />
+          </div>
+        </div>
+
+        <div className="admin-right-column">
+          <div className="admin-panel">
+            <h2 className="admin-panel-title">Liste des activités</h2>
+
+            <ActivityList
+              activities={activities}
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

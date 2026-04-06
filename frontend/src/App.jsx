@@ -1,32 +1,44 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Activities from "./pages/Activities";
 import Admin from "./pages/Admin";
+import Login from "./pages/Login";
 
 function App() {
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
+
   return (
     <Router>
-      <nav style={styles.nav}>
-        <Link to="/">Accueil</Link>
-        <Link to="/activites">Activités</Link>
-        <Link to="/admin">Admin</Link>
-      </nav>
+      <div style={styles.app}>
+        <Navbar />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/activites" element={<Activities />} />
-        <Route path="/admin" element={<Admin />} />
-      </Routes>
+        <main style={styles.main}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/activites" element={<Activities />} />
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/admin"
+              element={isAdmin ? <Admin /> : <Navigate to="/login" />}
+            />
+          </Routes>
+        </main>
+      </div>
     </Router>
   );
 }
 
 const styles = {
-  nav: {
-    display: "flex",
-    gap: "20px",
-    padding: "15px",
-    backgroundColor: "#111",
+  app: {
+    minHeight: "100vh",
+    backgroundColor: "#f3f4f6",
+    fontFamily: "Arial, sans-serif",
+  },
+  main: {
+    padding: "30px 20px",
+    maxWidth: "1200px",
+    margin: "0 auto",
   },
 };
 

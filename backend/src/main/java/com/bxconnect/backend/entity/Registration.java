@@ -4,12 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(
-    name = "registrations",
-    uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "activity_id"})
-    }
-)
+@Table(name = "registrations")
 public class Registration {
 
     @Id
@@ -17,14 +12,13 @@ public class Registration {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "activity_id", nullable = false)
+    @JoinColumn(name = "activity_id")
     private Activity activity;
 
-    @Column(name = "date_inscription", nullable = false)
     private LocalDateTime dateInscription;
 
     public Registration() {
@@ -35,13 +29,6 @@ public class Registration {
         this.user = user;
         this.activity = activity;
         this.dateInscription = dateInscription;
-    }
-
-    @PrePersist
-    public void prePersist() {
-        if (this.dateInscription == null) {
-            this.dateInscription = LocalDateTime.now();
-        }
     }
 
     public Long getId() {
