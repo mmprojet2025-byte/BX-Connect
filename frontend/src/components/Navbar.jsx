@@ -41,6 +41,17 @@ function Navbar() {
           Activités
         </NavLink>
 
+        {/* 🔥 NOUVEAU */}
+        <NavLink
+          to="/contact"
+          className={({ isActive }) =>
+            isActive ? "navbar-link active-link" : "navbar-link"
+          }
+          onClick={closeMenu}
+        >
+          Contact
+        </NavLink>
+
         <NavLink
           to="/admin"
           className={({ isActive }) =>

@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Activities from "./pages/Activities";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
+import Contact from "./pages/Contact";
 
 function App() {
   const isAdmin = localStorage.getItem("isAdmin") === "true";
@@ -17,6 +18,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/activites" element={<Activities />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
             <Route
               path="/admin"
