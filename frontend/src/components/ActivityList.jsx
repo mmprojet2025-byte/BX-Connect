@@ -5,49 +5,68 @@ function ActivityList({ activities, handleEdit, handleDelete, handleRegister }) 
 
   return (
     <div style={styles.grid}>
-      {activities.map((a) => (
-        <div key={a.id} style={styles.card}>
-          <h2 style={styles.cardTitle}>{a.titre}</h2>
+      {activities.map((a) => {
+        const isComplete = a.placesDisponibles === 0;
 
-          <p style={styles.description}>
-            <strong>Description :</strong> {a.description}
-          </p>
+        return (
+          <div key={a.id} style={styles.card}>
+            <h2 style={styles.cardTitle}>{a.titre}</h2>
 
-          <p style={styles.info}>📍 {a.lieu}</p>
+            <p style={styles.description}>
+              <strong>Description :</strong> {a.description}
+            </p>
 
-          <p style={styles.info}>
-            📅 {new Date(a.date).toLocaleDateString("fr-BE")}
-          </p>
+            <p style={styles.info}>📍 {a.lieu}</p>
 
-          <p style={styles.category}>🏷️ {a.categorie}</p>
+            <p style={styles.info}>
+              📅 {new Date(a.date).toLocaleDateString("fr-BE")}
+            </p>
 
-          <div style={styles.actions}>
-            {handleRegister && (
-              <button
-                onClick={() => handleRegister(a.id)}
-                style={styles.registerButton}
-              >
-                ✅ S’inscrire
-              </button>
-            )}
+            <p style={styles.category}>🏷️ {a.categorie}</p>
 
-            {handleEdit && (
-              <button onClick={() => handleEdit(a)} style={styles.editButton}>
-                ✏️ Modifier
-              </button>
-            )}
+            <p style={styles.info}>
+              👥 Places disponibles : {a.placesDisponibles ?? "Non défini"}
+            </p>
 
-            {handleDelete && (
-              <button
-                onClick={() => handleDelete(a.id)}
-                style={styles.deleteButton}
-              >
-                🗑️ Supprimer
-              </button>
-            )}
+            <p style={styles.info}>
+              {a.payante
+                ? `💰 Activité payante — ${a.prix} €`
+                : "🆓 Activité gratuite"}
+            </p>
+
+            <div style={styles.actions}>
+              {handleRegister && (
+                <button
+                  onClick={() => handleRegister(a.id)}
+                  disabled={isComplete}
+                  style={isComplete ? styles.disabledButton : styles.registerButton}
+                >
+                  {isComplete
+                    ? "❌ Complet"
+                    : a.payante
+                    ? "💳 Participer / Payer"
+                    : "✅ S’inscrire"}
+                </button>
+              )}
+
+              {handleEdit && (
+                <button onClick={() => handleEdit(a)} style={styles.editButton}>
+                  ✏️ Modifier
+                </button>
+              )}
+
+              {handleDelete && (
+                <button
+                  onClick={() => handleDelete(a.id)}
+                  style={styles.deleteButton}
+                >
+                  🗑️ Supprimer
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -102,6 +121,15 @@ const styles = {
     backgroundColor: "#2563eb",
     color: "#fff",
     cursor: "pointer",
+    fontWeight: "600",
+  },
+  disabledButton: {
+    padding: "10px 12px",
+    border: "none",
+    borderRadius: "8px",
+    backgroundColor: "#9ca3af",
+    color: "#fff",
+    cursor: "not-allowed",
     fontWeight: "600",
   },
   editButton: {

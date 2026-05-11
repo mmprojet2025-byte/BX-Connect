@@ -55,6 +55,48 @@ function ActivityForm({
         required
       />
 
+      <input
+        type="number"
+        name="capaciteMax"
+        placeholder="Capacité maximale"
+        value={formData.capaciteMax}
+        onChange={handleChange}
+        style={styles.input}
+        min="0"
+      />
+
+      <input
+        type="number"
+        name="placesDisponibles"
+        placeholder="Places disponibles"
+        value={formData.placesDisponibles}
+        onChange={handleChange}
+        style={styles.input}
+        min="0"
+      />
+
+      <label style={styles.checkboxLabel}>
+        <input
+          type="checkbox"
+          name="payante"
+          checked={formData.payante}
+          onChange={handleChange}
+        />
+        Activité payante
+      </label>
+
+      <input
+        type="number"
+        name="prix"
+        placeholder="Prix en €"
+        value={formData.prix}
+        onChange={handleChange}
+        style={styles.input}
+        min="0"
+        step="0.01"
+        disabled={!formData.payante}
+      />
+
       <button type="submit" style={styles.button}>
         {editingId ? "Enregistrer les modifications" : "Ajouter une activité"}
       </button>
@@ -89,6 +131,13 @@ const styles = {
     minHeight: "100px",
     resize: "vertical",
     outline: "none",
+  },
+  checkboxLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    fontSize: "15px",
+    color: "#374151",
   },
   button: {
     padding: "12px",

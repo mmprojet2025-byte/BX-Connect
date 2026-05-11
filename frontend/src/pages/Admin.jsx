@@ -4,28 +4,38 @@ import ActivityForm from "../components/ActivityForm";
 import ActivityList from "../components/ActivityList";
 import "./Admin.css";
 
+const emptyForm = {
+  titre: "",
+  description: "",
+  date: "",
+  lieu: "",
+  categorie: "",
+  capaciteMax: "",
+  placesDisponibles: "",
+  payante: false,
+  prix: "",
+};
+
 function Admin() {
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   const [activities, setActivities] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [formData, setFormData] = useState({
-    titre: "",
-    description: "",
-    date: "",
-    lieu: "",
-    categorie: "",
-  });
-
+  const [formData, setFormData] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     Promise.all([
       fetch("http://localhost:8080/api/activities"),
-      fetch("http://localhost:8080/api/registrations"),
+      fetch("http://localhost:8080/api/registrations", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
       fetch("http://localhost:8080/api/contact"),
     ])
       .then(async ([a, r, m]) => {
@@ -53,10 +63,15 @@ function Admin() {
         console.error("Erreur lors du chargement admin :", err);
         setLoading(false);
       });
-  }, []);
+  }, [token]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
   };
 
   const loadActivities = () => {
@@ -69,7 +84,11 @@ function Admin() {
   };
 
   const loadRegistrations = () => {
-    fetch("http://localhost:8080/api/registrations")
+    fetch("http://localhost:8080/api/registrations", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) =>
         setRegistrations(
@@ -86,6 +105,18 @@ function Admin() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    const activityToSave = {
+      ...formData,
+      capaciteMax:
+        formData.capaciteMax === "" ? null : Number(formData.capaciteMax),
+      placesDisponibles:
+        formData.placesDisponibles === ""
+          ? null
+          : Number(formData.placesDisponibles),
+      payante: Boolean(formData.payante),
+      prix: formData.prix === "" ? null : Number(formData.prix),
+    };
+
     const method = editingId ? "PUT" : "POST";
     const url = editingId
       ? `http://localhost:8080/api/activities/${editingId}`
@@ -94,16 +125,10 @@ function Admin() {
     fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(activityToSave),
     })
       .then(() => {
-        setFormData({
-          titre: "",
-          description: "",
-          date: "",
-          lieu: "",
-          categorie: "",
-        });
+        setFormData(emptyForm);
         setEditingId(null);
         loadActivities();
       })
@@ -126,6 +151,23 @@ function Admin() {
       );
   };
 
+  const updateRegistrationStatus = async (id, statut) => {
+    try {
+      await fetch(`http://localhost:8080/api/registrations/${id}/statut`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ statut }),
+      });
+
+      loadRegistrations();
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du statut :", error);
+    }
+  };
+
   const handleDeleteRegistration = (id) => {
     if (!window.confirm("Voulez-vous vraiment supprimer cette inscription ?")) {
       return;
@@ -133,6 +175,9 @@ function Admin() {
 
     fetch(`http://localhost:8080/api/registrations/${id}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     })
       .then(() => loadRegistrations())
       .catch((error) =>
@@ -142,28 +187,29 @@ function Admin() {
 
   const handleEdit = (a) => {
     setFormData({
-      titre: a.titre,
-      description: a.description,
-      date: a.date.slice(0, 16),
-      lieu: a.lieu,
-      categorie: a.categorie,
+      titre: a.titre || "",
+      description: a.description || "",
+      date: a.date ? a.date.slice(0, 16) : "",
+      lieu: a.lieu || "",
+      categorie: a.categorie || "",
+      capaciteMax: a.capaciteMax ?? "",
+      placesDisponibles: a.placesDisponibles ?? "",
+      payante: a.payante ?? false,
+      prix: a.prix ?? "",
     });
+
     setEditingId(a.id);
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setFormData({
-      titre: "",
-      description: "",
-      date: "",
-      lieu: "",
-      categorie: "",
-    });
+    setFormData(emptyForm);
   };
 
   const handleLogout = () => {
     localStorage.removeItem("isAdmin");
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
     navigate("/login");
   };
 
@@ -243,12 +289,15 @@ function Admin() {
                     <p>
                       <strong>Participant :</strong> {registration.user.nom}
                     </p>
+
                     <p>
                       <strong>Email :</strong> {registration.user.email}
                     </p>
+
                     <p>
                       <strong>Activité :</strong> {registration.activity.titre}
                     </p>
+
                     <p>
                       <strong>Date d’inscription :</strong>{" "}
                       {new Date(registration.dateInscription).toLocaleString(
@@ -263,11 +312,56 @@ function Admin() {
                       )}
                     </p>
 
+                    <p>
+                      <strong>Statut :</strong>{" "}
+                      {registration.statut || "Non défini"}
+                    </p>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "10px",
+                        marginTop: "10px",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <button
+                        onClick={() =>
+                          updateRegistrationStatus(
+                            registration.id,
+                            "VALIDEE"
+                          )
+                        }
+                      >
+                        Valider
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          updateRegistrationStatus(
+                            registration.id,
+                            "ANNULEE"
+                          )
+                        }
+                      >
+                        Annuler
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          updateRegistrationStatus(
+                            registration.id,
+                            "PAIEMENT_CONFIRME"
+                          )
+                        }
+                      >
+                        Paiement confirmé
+                      </button>
+                    </div>
+
                     <button
                       className="delete-registration-button"
-                      onClick={() =>
-                        handleDeleteRegistration(registration.id)
-                      }
+                      onClick={() => handleDeleteRegistration(registration.id)}
                     >
                       Supprimer l’inscription
                     </button>
@@ -289,12 +383,15 @@ function Admin() {
                     <p>
                       <strong>Nom :</strong> {msg.nom}
                     </p>
+
                     <p>
                       <strong>Email :</strong> {msg.email}
                     </p>
+
                     <p>
                       <strong>Message :</strong> {msg.message}
                     </p>
+
                     <p>
                       <strong>Date :</strong>{" "}
                       {new Date(msg.dateEnvoi).toLocaleString("fr-BE", {

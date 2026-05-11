@@ -26,16 +26,35 @@ public class Activity {
     @Column(name = "categorie", nullable = false, length = 100)
     private String categorie;
 
+    @Column(name = "capacite_max")
+    private Integer capaciteMax;
+
+    @Column(name = "places_disponibles")
+    private Integer placesDisponibles;
+
+    @Column(name = "payante")
+    private Boolean payante;
+
+    @Column(name = "prix")
+    private Double prix;
+
     public Activity() {
     }
 
-    public Activity(Long id, String titre, String description, LocalDateTime date, String lieu, String categorie) {
+    public Activity(Long id, String titre, String description, LocalDateTime date,
+                    String lieu, String categorie, Integer capaciteMax,
+                    Integer placesDisponibles, Boolean payante, Double prix) {
+
         this.id = id;
         this.titre = titre;
         this.description = description;
         this.date = date;
         this.lieu = lieu;
         this.categorie = categorie;
+        this.capaciteMax = capaciteMax;
+        this.placesDisponibles = placesDisponibles;
+        this.payante = payante;
+        this.prix = prix;
     }
 
     public Long getId() {
@@ -84,5 +103,37 @@ public class Activity {
 
     public void setCategorie(String categorie) {
         this.categorie = categorie;
+    }
+
+    public Integer getCapaciteMax() {
+        return capaciteMax;
+    }
+
+    public void setCapaciteMax(Integer capaciteMax) {
+        this.capaciteMax = capaciteMax;
+    }
+
+    public Integer getPlacesDisponibles() {
+        return placesDisponibles;
+    }
+
+    public void setPlacesDisponibles(Integer placesDisponibles) {
+        this.placesDisponibles = placesDisponibles;
+    }
+
+    public Boolean getPayante() {
+        return payante;
+    }
+
+    public void setPayante(Boolean payante) {
+        this.payante = payante;
+    }
+
+    public Double getPrix() {
+        return prix;
+    }
+
+    public void setPrix(Double prix) {
+        this.prix = prix;
     }
 }

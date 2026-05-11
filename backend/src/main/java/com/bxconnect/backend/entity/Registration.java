@@ -21,14 +21,23 @@ public class Registration {
 
     private LocalDateTime dateInscription;
 
+    @Column(name = "statut")
+    private String statut;
+
     public Registration() {
     }
 
-    public Registration(Long id, User user, Activity activity, LocalDateTime dateInscription) {
+    public Registration(Long id,
+                        User user,
+                        Activity activity,
+                        LocalDateTime dateInscription,
+                        String statut) {
+
         this.id = id;
         this.user = user;
         this.activity = activity;
         this.dateInscription = dateInscription;
+        this.statut = statut;
     }
 
     public Long getId() {
@@ -61,5 +70,13 @@ public class Registration {
 
     public void setDateInscription(LocalDateTime dateInscription) {
         this.dateInscription = dateInscription;
+    }
+
+    public String getStatut() {
+        return statut;
+    }
+
+    public void setStatut(String statut) {
+        this.statut = statut;
     }
 }

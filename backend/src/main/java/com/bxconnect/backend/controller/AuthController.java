@@ -2,7 +2,7 @@ package com.bxconnect.backend.controller;
 
 import com.bxconnect.backend.model.Admin;
 import com.bxconnect.backend.repository.AdminRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.bxconnect.backend.security.JwtService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -14,19 +14,30 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
-    @Autowired
-    private AdminRepository adminRepository;
+    private final AdminRepository adminRepository;
+    private final JwtService jwtService;
+
+    public AuthController(AdminRepository adminRepository, JwtService jwtService) {
+        this.adminRepository = adminRepository;
+        this.jwtService = jwtService;
+    }
 
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Admin admin) {
         Map<String, Object> response = new HashMap<>();
 
-        Optional<Admin> adminTrouve = adminRepository.findByEmail(admin.getEmail());
+        Optional<Admin> adminTrouve =
+                adminRepository.findByEmail(admin.getEmail());
 
-        if (adminTrouve.isPresent() &&
-                adminTrouve.get().getMotDePasse().equals(admin.getMotDePasse())) {
+        if (adminTrouve.isPresent()
+                && adminTrouve.get().getMotDePasse().equals(admin.getMotDePasse())) {
+
+            String token = jwtService.generateToken(admin.getEmail(), "ADMIN");
+
             response.put("success", true);
             response.put("message", "Connexion réussie");
+            response.put("token", token);
+            response.put("role", "ADMIN");
         } else {
             response.put("success", false);
             response.put("message", "Email ou mot de passe incorrect");

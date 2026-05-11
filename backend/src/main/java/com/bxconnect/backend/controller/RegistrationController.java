@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -47,37 +48,110 @@ public class RegistrationController {
 
     @PostMapping
     public ResponseEntity<?> createRegistration(@RequestBody RegistrationRequest request) {
-        Optional<User> userOptional = userService.getUserById(request.getUserId());
-        Optional<Activity> activityOptional = activityService.getActivityById(request.getActivityId());
+
+        Optional<User> userOptional =
+                userService.getUserById(request.getUserId());
+
+        Optional<Activity> activityOptional =
+                activityService.getActivityById(request.getActivityId());
 
         if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("Utilisateur introuvable");
+            return ResponseEntity
+                    .badRequest()
+                    .body("Utilisateur introuvable");
         }
 
         if (activityOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("Activité introuvable");
+            return ResponseEntity
+                    .badRequest()
+                    .body("Activité introuvable");
         }
 
-        if (registrationService.existsByUserAndActivity(userOptional.get(), activityOptional.get())) {
-            return ResponseEntity.badRequest().body("Vous êtes déjà inscrit à cette activité");
+        User user = userOptional.get();
+        Activity activity = activityOptional.get();
+
+        if (registrationService.existsByUserAndActivity(user, activity)) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Vous êtes déjà inscrit à cette activité");
+        }
+
+        if (activity.getPlacesDisponibles() != null
+                && activity.getPlacesDisponibles() <= 0) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body("Cette activité est complète");
         }
 
         Registration registration = new Registration();
-        registration.setUser(userOptional.get());
-        registration.setActivity(activityOptional.get());
+
+        registration.setUser(user);
+        registration.setActivity(activity);
         registration.setDateInscription(LocalDateTime.now());
+
+        if (activity.getPayante() != null && activity.getPayante()) {
+            registration.setStatut("PAIEMENT_EN_ATTENTE");
+        } else {
+            registration.setStatut("VALIDEE");
+        }
 
         registrationService.saveRegistration(registration);
 
-        return ResponseEntity.ok("Inscription enregistrée avec succès");
+        if (activity.getPlacesDisponibles() != null) {
+
+            activity.setPlacesDisponibles(
+                    activity.getPlacesDisponibles() - 1
+            );
+
+            activityService.saveActivity(activity);
+        }
+
+        return ResponseEntity
+                .ok("Inscription enregistrée avec succès");
+    }
+
+    @PutMapping("/{id}/statut")
+    public ResponseEntity<?> updateRegistrationStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body
+    ) {
+        Optional<Registration> registrationOptional =
+                registrationService.getRegistrationById(id);
+
+        if (registrationOptional.isEmpty()) {
+            return ResponseEntity
+                    .notFound()
+                    .build();
+        }
+
+        String nouveauStatut = body.get("statut");
+
+        if (nouveauStatut == null || nouveauStatut.isBlank()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Le statut est obligatoire");
+        }
+
+        Registration registration = registrationOptional.get();
+        registration.setStatut(nouveauStatut);
+
+        Registration updatedRegistration =
+                registrationService.saveRegistration(registration);
+
+        return ResponseEntity.ok(updatedRegistration);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRegistration(@PathVariable Long id) {
+
         if (registrationService.getRegistrationById(id).isPresent()) {
+
             registrationService.deleteRegistration(id);
+
             return ResponseEntity.noContent().build();
         }
+
         return ResponseEntity.notFound().build();
     }
 }

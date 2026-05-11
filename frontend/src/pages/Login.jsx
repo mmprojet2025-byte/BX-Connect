@@ -16,12 +16,19 @@ function Login() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, motDePasse }),
+      body: JSON.stringify({
+        email: email,
+        motDePasse: motDePasse,
+        mot_de_passe: motDePasse,
+      }),
     })
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
           localStorage.setItem("isAdmin", "true");
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("role", data.role);
+
           navigate("/admin");
         } else {
           setMessage(data.message);
