@@ -99,6 +99,21 @@ Le projet intègre :
 - un système de token sécurisé,
 - une séparation entre routes publiques et routes administrateur.
 
+# Documentation API — Swagger
+
+Le projet intègre Swagger / OpenAPI afin de documenter automatiquement les endpoints REST.
+
+Swagger permet :
+- de visualiser les routes API,
+- de tester les endpoints,
+- de voir les paramètres et réponses,
+- de faciliter le développement frontend/backend.
+
+URL Swagger :
+
+```text
+http://localhost:8080/swagger-ui/index.html
+
 ---
 
 # Architecture du projet
