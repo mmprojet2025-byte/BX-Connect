@@ -3,6 +3,7 @@ package com.bxconnect.backend.config;
 import com.bxconnect.backend.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,25 +27,24 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        .requestMatchers(
-                                "/api/auth/**"
-                        ).permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
 
                         .requestMatchers(
                                 "/api/activities/**",
                                 "/api/contact/**"
                         ).permitAll()
 
-                        .requestMatchers(
-                                "/api/registrations/**"
-                        ).hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/registrations")
+                        .permitAll()
+
+                        .requestMatchers("/api/registrations/**")
+                        .hasRole("ADMIN")
 
                         .anyRequest()
                         .authenticated()
