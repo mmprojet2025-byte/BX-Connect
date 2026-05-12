@@ -1,56 +1,111 @@
 # Bx-Connect — V1
 
 ## Présentation
-Bx-Connect est une application web fullstack développée pour centraliser la gestion d’activités, des inscriptions et des messages de contact.
 
-Le projet a été pensé pour une association comme **Bx-Jeunes Impact**, mais il peut évoluer pour être utilisé par d’autres associations.
+Bx-Connect est une application web fullstack développée dans le cadre d’un travail de fin d’études.
 
-L’objectif principal de la V1 est de proposer une base fonctionnelle, simple et professionnelle.
+Le projet a pour objectif de centraliser la gestion :
+- des activités,
+- des inscriptions,
+- des utilisateurs,
+- des messages de contact,
+- et de l’administration de la plateforme.
+
+L’application s’inspire du contexte associatif de Bx-Jeunes Impact et vise principalement les jeunes de 15 à 30 ans.
 
 ---
 
-## Objectifs de la V1
-La V1 permet :
+# Objectifs de la V1
 
-### Côté utilisateur
-- voir les activités
+La V1 permet de construire une base moderne, sécurisée et évolutive.
+
+## Côté utilisateur
+
+- consulter les activités
 - s’inscrire à une activité
+- consulter les places disponibles
+- voir les activités gratuites ou payantes
 - envoyer un message de contact
 
-### Côté admin
-- se connecter
+## Côté administrateur
+
+- se connecter via un espace sécurisé
 - ajouter une activité
 - modifier une activité
 - supprimer une activité
-- consulter les inscriptions
-- supprimer une inscription
+- gérer les inscriptions
+- modifier les statuts des inscriptions
 - consulter les messages de contact
-- voir des statistiques simples
+- consulter des statistiques simples
 
 ---
 
-## Technologies utilisées
+# Technologies utilisées
 
-### Frontend
+## Frontend
+
 - React
 - Vite
 - React Router
 - CSS
 
-### Backend
+## Backend
+
 - Spring Boot
 - Spring Data JPA
+- Spring Security
+- JWT Authentication
 - API REST
 
-### Base de données
+## Base de données
+
 - MySQL
 
 ---
 
-## Structure du projet
+# Fonctionnalités principales
+
+## Gestion des activités
+
+Chaque activité possède :
+- un titre,
+- une description,
+- une date,
+- un lieu,
+- une catégorie,
+- une capacité maximale,
+- des places disponibles,
+- un prix,
+- un statut gratuit ou payant.
+
+## Gestion des inscriptions
+
+Le système permet :
+- l’inscription à une activité,
+- la vérification des doublons,
+- la gestion automatique des places disponibles,
+- la gestion des statuts :
+  - VALIDEE
+  - ANNULEE
+  - PAIEMENT_EN_ATTENTE
+  - PAIEMENT_CONFIRME
+
+## Sécurité
+
+Le projet intègre :
+- Spring Security,
+- une authentification JWT,
+- la protection des routes API,
+- un système de token sécurisé,
+- une séparation entre routes publiques et routes administrateur.
+
+---
+
+# Architecture du projet
 
 ```bash
 BX-Connect/
-├── frontend/
-├── backend/
-└── database/
+│
+├── frontend/      # Application React
+├── backend/       # API Spring Boot
+└── database/      # Scripts SQL
