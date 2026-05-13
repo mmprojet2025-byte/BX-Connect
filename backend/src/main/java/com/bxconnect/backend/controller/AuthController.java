@@ -3,6 +3,7 @@ package com.bxconnect.backend.controller;
 import com.bxconnect.backend.entity.User;
 import com.bxconnect.backend.repository.UserRepository;
 import com.bxconnect.backend.security.JwtService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -16,13 +17,16 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthController(
             UserRepository userRepository,
-            JwtService jwtService
+            JwtService jwtService,
+            PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/login")
@@ -43,7 +47,10 @@ public class AuthController {
 
         User user = userOptional.get();
 
-        if (!user.getMotDePasse().equals(loginRequest.getMotDePasse())) {
+        if (!passwordEncoder.matches(
+                loginRequest.getMotDePasse(),
+                user.getMotDePasse()
+        )) {
 
             response.put("success", false);
             response.put("message", "Mot de passe incorrect");
