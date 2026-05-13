@@ -14,7 +14,9 @@ public class RegistrationService {
 
     private final RegistrationRepository registrationRepository;
 
-    public RegistrationService(RegistrationRepository registrationRepository) {
+    public RegistrationService(
+            RegistrationRepository registrationRepository
+    ) {
         this.registrationRepository = registrationRepository;
     }
 
@@ -26,7 +28,9 @@ public class RegistrationService {
         return registrationRepository.findById(id);
     }
 
-    public Registration saveRegistration(Registration registration) {
+    public Registration saveRegistration(
+            Registration registration
+    ) {
         return registrationRepository.save(registration);
     }
 
@@ -34,7 +38,17 @@ public class RegistrationService {
         registrationRepository.deleteById(id);
     }
 
-    public boolean existsByUserAndActivity(User user, Activity activity) {
-        return registrationRepository.existsByUserAndActivity(user, activity);
+    public boolean existsByUserAndActivity(
+            User user,
+            Activity activity
+    ) {
+        return registrationRepository
+                .existsByUserAndActivity(user, activity);
+    }
+
+    public List<Registration> getRegistrationsByUser(
+            User user
+    ) {
+        return registrationRepository.findByUser(user);
     }
 }

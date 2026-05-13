@@ -76,6 +76,21 @@ function Navbar() {
           }
           onClick={closeMenu}
         >
+          {nom && (
+  <NavLink
+    to="/mes-inscriptions"
+    className={({ isActive }) =>
+      isActive
+        ? "navbar-link active-link"
+        : "navbar-link"
+    }
+    onClick={closeMenu}
+  >
+    Mes inscriptions
+  </NavLink>
+)}
+
+
           Contact
         </NavLink>
 

@@ -43,6 +43,31 @@ public class RegistrationController {
         return registrationService.getAllRegistrations();
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyRegistrations(
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("Token manquant ou invalide");
+        }
+
+        String token = authorizationHeader.substring(7);
+        String email = jwtService.extractEmail(token);
+
+        Optional<User> userOptional = userService.getUserByEmail(email);
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.badRequest().body("Utilisateur introuvable");
+        }
+
+        User user = userOptional.get();
+
+        List<Registration> registrations =
+                registrationService.getRegistrationsByUser(user);
+
+        return ResponseEntity.ok(registrations);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Registration> getRegistrationById(@PathVariable Long id) {
         return registrationService.getRegistrationById(id)
