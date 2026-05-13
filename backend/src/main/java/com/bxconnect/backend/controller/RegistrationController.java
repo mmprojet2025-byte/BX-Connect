@@ -47,17 +47,27 @@ public class RegistrationController {
     public ResponseEntity<?> getMyRegistrations(
             @RequestHeader("Authorization") String authorizationHeader
     ) {
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ResponseEntity.badRequest().body("Token manquant ou invalide");
+
+        if (authorizationHeader == null
+                || !authorizationHeader.startsWith("Bearer ")) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body("Token manquant ou invalide");
         }
 
         String token = authorizationHeader.substring(7);
+
         String email = jwtService.extractEmail(token);
 
-        Optional<User> userOptional = userService.getUserByEmail(email);
+        Optional<User> userOptional =
+                userService.getUserByEmail(email);
 
         if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("Utilisateur introuvable");
+
+            return ResponseEntity
+                    .badRequest()
+                    .body("Utilisateur introuvable");
         }
 
         User user = userOptional.get();
@@ -69,7 +79,10 @@ public class RegistrationController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Registration> getRegistrationById(@PathVariable Long id) {
+    public ResponseEntity<Registration> getRegistrationById(
+            @PathVariable Long id
+    ) {
+
         return registrationService.getRegistrationById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -80,37 +93,50 @@ public class RegistrationController {
             @RequestBody RegistrationRequest request,
             @RequestHeader("Authorization") String authorizationHeader
     ) {
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+
+        if (authorizationHeader == null
+                || !authorizationHeader.startsWith("Bearer ")) {
+
             return ResponseEntity
                     .badRequest()
                     .body("Token manquant ou invalide");
         }
 
         String token = authorizationHeader.substring(7);
+
         String email = jwtService.extractEmail(token);
 
         Optional<User> userOptional =
                 userService.getUserByEmail(email);
 
         Optional<Activity> activityOptional =
-                activityService.getActivityById(request.getActivityId());
+                activityService.getActivityById(
+                        request.getActivityId()
+                );
 
         if (userOptional.isEmpty()) {
+
             return ResponseEntity
                     .badRequest()
                     .body("Utilisateur introuvable");
         }
 
         if (activityOptional.isEmpty()) {
+
             return ResponseEntity
                     .badRequest()
                     .body("Activité introuvable");
         }
 
         User user = userOptional.get();
+
         Activity activity = activityOptional.get();
 
-        if (registrationService.existsByUserAndActivity(user, activity)) {
+        if (registrationService.existsByUserAndActivity(
+                user,
+                activity
+        )) {
+
             return ResponseEntity
                     .badRequest()
                     .body("Vous êtes déjà inscrit à cette activité");
@@ -130,9 +156,13 @@ public class RegistrationController {
         registration.setActivity(activity);
         registration.setDateInscription(LocalDateTime.now());
 
-        if (activity.getPayante() != null && activity.getPayante()) {
+        if (activity.getPayante() != null
+                && activity.getPayante()) {
+
             registration.setStatut("PAIEMENT_EN_ATTENTE");
+
         } else {
+
             registration.setStatut("VALIDEE");
         }
 
@@ -156,10 +186,12 @@ public class RegistrationController {
             @PathVariable Long id,
             @RequestBody Map<String, String> body
     ) {
+
         Optional<Registration> registrationOptional =
                 registrationService.getRegistrationById(id);
 
         if (registrationOptional.isEmpty()) {
+
             return ResponseEntity
                     .notFound()
                     .build();
@@ -167,31 +199,58 @@ public class RegistrationController {
 
         String nouveauStatut = body.get("statut");
 
-        if (nouveauStatut == null || nouveauStatut.isBlank()) {
+        if (nouveauStatut == null
+                || nouveauStatut.isBlank()) {
+
             return ResponseEntity
                     .badRequest()
                     .body("Le statut est obligatoire");
         }
 
-        Registration registration = registrationOptional.get();
+        Registration registration =
+                registrationOptional.get();
+
         registration.setStatut(nouveauStatut);
 
         Registration updatedRegistration =
-                registrationService.saveRegistration(registration);
+                registrationService.saveRegistration(
+                        registration
+                );
 
         return ResponseEntity.ok(updatedRegistration);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRegistration(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteRegistration(
+            @PathVariable Long id
+    ) {
 
-        if (registrationService.getRegistrationById(id).isPresent()) {
+        Optional<Registration> registrationOptional =
+                registrationService.getRegistrationById(id);
 
-            registrationService.deleteRegistration(id);
+        if (registrationOptional.isEmpty()) {
 
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.notFound().build();
+        Registration registration =
+                registrationOptional.get();
+
+        Activity activity =
+                registration.getActivity();
+
+        if (activity != null
+                && activity.getPlacesDisponibles() != null) {
+
+            activity.setPlacesDisponibles(
+                    activity.getPlacesDisponibles() + 1
+            );
+
+            activityService.saveActivity(activity);
+        }
+
+        registrationService.deleteRegistration(id);
+
+        return ResponseEntity.noContent().build();
     }
 }
