@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
-
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [message, setMessage] = useState("");
@@ -10,62 +9,49 @@ function Login() {
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
-
     e.preventDefault();
 
+    setMessage("Connexion en cours...");
+
     fetch("http://localhost:8080/api/auth/login", {
-
       method: "POST",
-
       headers: {
         "Content-Type": "application/json",
       },
-
       body: JSON.stringify({
         email: email,
         motDePasse: motDePasse,
       }),
-
     })
-
       .then((response) => response.json())
-
       .then((data) => {
+        console.log("Réponse login :", data);
 
         if (data.success) {
-
           localStorage.setItem("token", data.token);
           localStorage.setItem("role", data.role);
           localStorage.setItem("nom", data.nom);
 
-          navigate("/admin");
+          setMessage("Connexion réussie");
 
+          window.location.href = "/admin";
         } else {
-
-          setMessage(data.message);
+          setMessage(data.message || "Connexion refusée");
         }
       })
-
       .catch((error) => {
-
         console.error("Erreur lors de la connexion :", error);
-
         setMessage("Erreur serveur");
       });
   };
 
   return (
-
     <div style={{ padding: "20px" }}>
-
       <h1>Connexion</h1>
 
       <form onSubmit={handleSubmit} style={{ maxWidth: "400px" }}>
-
         <div style={{ marginBottom: "10px" }}>
-
           <label>Email</label>
-
           <br />
 
           <input
@@ -82,9 +68,7 @@ function Login() {
         </div>
 
         <div style={{ marginBottom: "10px" }}>
-
           <label>Mot de passe</label>
-
           <br />
 
           <input
@@ -108,21 +92,18 @@ function Login() {
         >
           Se connecter
         </button>
-
       </form>
 
       {message && (
-
         <p
           style={{
-            color: "red",
+            color: message.includes("réussie") ? "green" : "red",
             marginTop: "15px",
           }}
         >
           {message}
         </p>
       )}
-
     </div>
   );
 }
