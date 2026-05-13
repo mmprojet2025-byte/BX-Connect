@@ -1,7 +1,7 @@
 package com.bxconnect.backend.controller;
 
-import com.bxconnect.backend.model.Admin;
-import com.bxconnect.backend.repository.AdminRepository;
+import com.bxconnect.backend.entity.User;
+import com.bxconnect.backend.repository.UserRepository;
 import com.bxconnect.backend.security.JwtService;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,34 +14,52 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
-    private final AdminRepository adminRepository;
+    private final UserRepository userRepository;
     private final JwtService jwtService;
 
-    public AuthController(AdminRepository adminRepository, JwtService jwtService) {
-        this.adminRepository = adminRepository;
+    public AuthController(
+            UserRepository userRepository,
+            JwtService jwtService
+    ) {
+        this.userRepository = userRepository;
         this.jwtService = jwtService;
     }
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody Admin admin) {
+    public Map<String, Object> login(@RequestBody User loginRequest) {
+
         Map<String, Object> response = new HashMap<>();
 
-        Optional<Admin> adminTrouve =
-                adminRepository.findByEmail(admin.getEmail());
+        Optional<User> userOptional =
+                userRepository.findByEmail(loginRequest.getEmail());
 
-        if (adminTrouve.isPresent()
-                && adminTrouve.get().getMotDePasse().equals(admin.getMotDePasse())) {
+        if (userOptional.isEmpty()) {
 
-            String token = jwtService.generateToken(admin.getEmail(), "ADMIN");
-
-            response.put("success", true);
-            response.put("message", "Connexion réussie");
-            response.put("token", token);
-            response.put("role", "ADMIN");
-        } else {
             response.put("success", false);
-            response.put("message", "Email ou mot de passe incorrect");
+            response.put("message", "Utilisateur introuvable");
+
+            return response;
         }
+
+        User user = userOptional.get();
+
+        if (!user.getMotDePasse().equals(loginRequest.getMotDePasse())) {
+
+            response.put("success", false);
+            response.put("message", "Mot de passe incorrect");
+
+            return response;
+        }
+
+        String token = jwtService.generateToken(
+                user.getEmail(),
+                user.getRole()
+        );
+
+        response.put("success", true);
+        response.put("token", token);
+        response.put("role", user.getRole());
+        response.put("nom", user.getNom());
 
         return response;
     }

@@ -1,6 +1,6 @@
 package com.bxconnect.backend.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity
@@ -17,7 +17,7 @@ public class User {
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "mot_de_passe", nullable = false, length = 255)
     private String motDePasse;
 
@@ -27,7 +27,13 @@ public class User {
     public User() {
     }
 
-    public User(Long id, String nom, String email, String motDePasse, String role) {
+    public User(
+            Long id,
+            String nom,
+            String email,
+            String motDePasse,
+            String role
+    ) {
         this.id = id;
         this.nom = nom;
         this.email = email;
