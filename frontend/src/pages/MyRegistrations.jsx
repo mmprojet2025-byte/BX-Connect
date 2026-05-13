@@ -5,9 +5,9 @@ function MyRegistrations() {
   const [registrations, setRegistrations] = useState([]);
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
+  const token = localStorage.getItem("token");
 
-    const token = localStorage.getItem("token");
+  const loadRegistrations = () => {
 
     if (!token) {
       setMessage("Vous devez être connecté.");
@@ -37,8 +37,55 @@ function MyRegistrations() {
 
         setMessage("Erreur serveur");
       });
+  };
 
+  useEffect(() => {
+    loadRegistrations();
   }, []);
+
+  const handleCancelRegistration = async (registrationId) => {
+
+    const confirmDelete = window.confirm(
+      "Voulez-vous vraiment annuler cette inscription ?"
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    try {
+
+      const response = await fetch(
+        `http://localhost:8080/api/registrations/${registrationId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+
+        setMessage("Inscription annulée avec succès");
+
+        loadRegistrations();
+
+      } else {
+
+        setMessage("Erreur lors de l’annulation");
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Erreur annulation inscription :",
+        error
+      );
+
+      setMessage("Erreur serveur");
+    }
+  };
 
   return (
 
@@ -94,6 +141,15 @@ function MyRegistrations() {
                 </strong>
               </p>
 
+              <button
+                onClick={() =>
+                  handleCancelRegistration(registration.id)
+                }
+                style={styles.cancelButton}
+              >
+                ❌ Annuler l’inscription
+              </button>
+
             </div>
           ))}
 
@@ -134,6 +190,17 @@ const styles = {
   cardTitle: {
     marginTop: 0,
     color: "#111827",
+  },
+
+  cancelButton: {
+    marginTop: "15px",
+    padding: "10px 14px",
+    border: "none",
+    borderRadius: "8px",
+    backgroundColor: "#dc2626",
+    color: "white",
+    cursor: "pointer",
+    fontWeight: "600",
   },
 
 };
