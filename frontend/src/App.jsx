@@ -5,6 +5,7 @@ import Activities from "./pages/Activities";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import Contact from "./pages/Contact";
+import Register from "./pages/Register";
 
 function App() {
 
@@ -33,6 +34,10 @@ function App() {
               path="/contact"
               element={<Contact />}
             />
+            <Route
+  path="/register"
+  element={<Register />}
+/>
 
             <Route
               path="/login"

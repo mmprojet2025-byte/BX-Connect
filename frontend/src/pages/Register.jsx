@@ -1,63 +1,97 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function Login() {
+function Register() {
+
+  const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [message, setMessage] = useState("");
 
+  const navigate = useNavigate();
+
   const handleSubmit = (e) => {
+
     e.preventDefault();
 
-    setMessage("Connexion en cours...");
+    fetch("http://localhost:8080/api/auth/register", {
 
-    fetch("http://localhost:8080/api/auth/login", {
       method: "POST",
+
       headers: {
         "Content-Type": "application/json",
       },
+
       body: JSON.stringify({
-        email: email,
-        motDePasse: motDePasse,
+        nom,
+        email,
+        motDePasse,
       }),
+
     })
+
       .then((response) => response.json())
+
       .then((data) => {
-        console.log("Réponse login :", data);
+
+        setMessage(data.message);
 
         if (data.success) {
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("role", data.role);
-          localStorage.setItem("nom", data.nom);
 
-          setMessage("Connexion réussie");
-
-          if (data.role === "ROLE_ADMIN") {
-            window.location.href = "/admin";
-          } else {
-            window.location.href = "/activites";
-          }
-        } else {
-          setMessage(data.message || "Connexion refusée");
+          setTimeout(() => {
+            navigate("/login");
+          }, 1000);
         }
       })
+
       .catch((error) => {
-        console.error("Erreur lors de la connexion :", error);
+
+        console.error("Erreur inscription :", error);
+
         setMessage("Erreur serveur");
       });
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Connexion</h1>
 
-      <form onSubmit={handleSubmit} style={{ maxWidth: "400px" }}>
+    <div style={{ padding: "20px" }}>
+
+      <h1>Créer un compte</h1>
+
+      <form
+        onSubmit={handleSubmit}
+        style={{ maxWidth: "400px" }}
+      >
+
         <div style={{ marginBottom: "10px" }}>
+
+          <label>Nom</label>
+
+          <br />
+
+          <input
+            type="text"
+            placeholder="Votre nom"
+            value={nom}
+            onChange={(e) => setNom(e.target.value)}
+            required
+            style={{
+              width: "100%",
+              padding: "10px",
+            }}
+          />
+
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+
           <label>Email</label>
+
           <br />
 
           <input
             type="email"
-            placeholder="Entrez votre email"
+            placeholder="Votre email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -66,15 +100,18 @@ function Login() {
               padding: "10px",
             }}
           />
+
         </div>
 
         <div style={{ marginBottom: "10px" }}>
+
           <label>Mot de passe</label>
+
           <br />
 
           <input
             type="password"
-            placeholder="Entrez votre mot de passe"
+            placeholder="Votre mot de passe"
             value={motDePasse}
             onChange={(e) => setMotDePasse(e.target.value)}
             required
@@ -83,6 +120,7 @@ function Login() {
               padding: "10px",
             }}
           />
+
         </div>
 
         <button
@@ -91,26 +129,28 @@ function Login() {
             padding: "10px 20px",
           }}
         >
-          Se connecter
+          Créer le compte
         </button>
 
-        <p style={{ marginTop: "15px" }}>
-          Pas encore de compte ? <a href="/register">Créer un compte</a>
-        </p>
       </form>
 
+      <p style={{ marginTop: "15px" }}>
+        Déjà un compte ?{" "}
+        <a href="/login">
+          Se connecter
+        </a>
+      </p>
+
       {message && (
-        <p
-          style={{
-            color: message.includes("réussie") ? "green" : "red",
-            marginTop: "15px",
-          }}
-        >
+
+        <p style={{ marginTop: "15px" }}>
           {message}
         </p>
+
       )}
+
     </div>
   );
 }
 
-export default Login;
+export default Register;

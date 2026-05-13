@@ -15,14 +15,21 @@ function Activities() {
   }, []);
 
   const handleRegister = async (activityId) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setMessage("Vous devez être connecté pour vous inscrire.");
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:8080/api/registrations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userId: 1,
           activityId: activityId,
         }),
       });
@@ -42,16 +49,17 @@ function Activities() {
   return (
     <div style={styles.page}>
       <h1 style={styles.title}>Nos activités</h1>
+
       <p style={styles.subtitle}>
         Découvrez les différentes activités disponibles sur la plateforme.
       </p>
 
       {message && <p style={styles.message}>{message}</p>}
-<ActivityList
-  activities={activities}
-  handleRegister={handleRegister}
-/>
-     
+
+      <ActivityList
+        activities={activities}
+        handleRegister={handleRegister}
+      />
     </div>
   );
 }

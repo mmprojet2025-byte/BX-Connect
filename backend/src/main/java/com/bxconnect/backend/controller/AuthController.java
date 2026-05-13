@@ -5,6 +5,7 @@ import com.bxconnect.backend.repository.UserRepository;
 import com.bxconnect.backend.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import com.bxconnect.backend.dto.RegisterRequest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +29,44 @@ public class AuthController {
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
     }
+
+    @PostMapping("/register")
+public Map<String, Object> register(
+        @RequestBody RegisterRequest request
+) {
+
+    Map<String, Object> response = new HashMap<>();
+
+    Optional<User> existingUser =
+            userRepository.findByEmail(request.getEmail());
+
+    if (existingUser.isPresent()) {
+
+        response.put("success", false);
+        response.put("message", "Email déjà utilisé");
+
+        return response;
+    }
+
+    User user = new User();
+
+    user.setNom(request.getNom());
+
+    user.setEmail(request.getEmail());
+
+    user.setMotDePasse(
+            passwordEncoder.encode(request.getMotDePasse())
+    );
+
+    user.setRole("ROLE_USER");
+
+    userRepository.save(user);
+
+    response.put("success", true);
+    response.put("message", "Compte créé avec succès");
+
+    return response;
+}
 
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody User loginRequest) {

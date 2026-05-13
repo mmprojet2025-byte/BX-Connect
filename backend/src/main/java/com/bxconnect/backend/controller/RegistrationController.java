@@ -4,6 +4,7 @@ import com.bxconnect.backend.entity.Activity;
 import com.bxconnect.backend.entity.Registration;
 import com.bxconnect.backend.entity.User;
 import com.bxconnect.backend.model.RegistrationRequest;
+import com.bxconnect.backend.security.JwtService;
 import com.bxconnect.backend.service.ActivityService;
 import com.bxconnect.backend.service.RegistrationService;
 import com.bxconnect.backend.service.UserService;
@@ -23,15 +24,18 @@ public class RegistrationController {
     private final RegistrationService registrationService;
     private final UserService userService;
     private final ActivityService activityService;
+    private final JwtService jwtService;
 
     public RegistrationController(
             RegistrationService registrationService,
             UserService userService,
-            ActivityService activityService
+            ActivityService activityService,
+            JwtService jwtService
     ) {
         this.registrationService = registrationService;
         this.userService = userService;
         this.activityService = activityService;
+        this.jwtService = jwtService;
     }
 
     @GetMapping
@@ -47,10 +51,21 @@ public class RegistrationController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createRegistration(@RequestBody RegistrationRequest request) {
+    public ResponseEntity<?> createRegistration(
+            @RequestBody RegistrationRequest request,
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Token manquant ou invalide");
+        }
+
+        String token = authorizationHeader.substring(7);
+        String email = jwtService.extractEmail(token);
 
         Optional<User> userOptional =
-                userService.getUserById(request.getUserId());
+                userService.getUserByEmail(email);
 
         Optional<Activity> activityOptional =
                 activityService.getActivityById(request.getActivityId());
